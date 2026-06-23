@@ -7,13 +7,15 @@
   - [环境部署](#环境部署)
     - [需要下载的工具](#需要下载的工具)
       - [STM32CubeMX2（仅用于C5系列）](#stm32cubemx2仅用于c5系列)
-    - [STM32CubeMX（不可用于C5系列）](#stm32cubemx不可用于c5系列)
+      - [STM32CubeMX（不可用于C5系列）](#stm32cubemx不可用于c5系列)
       - [VS Code](#vs-code)
     - [安装方法](#安装方法)
       - [STM32CubeMX2（仅用于C5系列）](#stm32cubemx2仅用于c5系列-1)
       - [STM32CubeMX（不可用于C5系列）](#stm32cubemx不可用于c5系列-1)
       - [VS Code](#vs-code-1)
       - [GCC](#gcc)
+      - [OpenOCD](#openocd)
+    - [环境验证](#环境验证)
 
 
 ## 系统安装
@@ -66,7 +68,7 @@ Linux基础操作：
 
 ![](doc_images/2026-06-22-08-38-02.png)
 
-### STM32CubeMX（不可用于C5系列）
+#### STM32CubeMX（不可用于C5系列）
 
 > https://www.st.com/en/development-tools/stm32cubemx.html
 
@@ -159,6 +161,14 @@ sudo ./stm32cubemx2-1.0.1-X64-Linux-installer
 sudo apt install ./code-xxx.deb
 ```
 
+完成APT的安装之后，进入VS Code，安装如下几个插件（搜索名字的前几个单词即可）：
+
+![](doc_images/2026-06-23-14-05-48.png)
+
+![](doc_images/2026-06-23-14-06-02.png)
+
+![](doc_images/2026-06-23-14-06-38.png)
+
 #### GCC
 
 使用APT直接安装：
@@ -166,3 +176,63 @@ sudo apt install ./code-xxx.deb
 ```Shell
 sudo apt install gcc-arm-none-eabi
 ```
+
+#### OpenOCD
+
+使用APT直接安装：
+
+```Shell
+sudo apt install openocd
+```
+
+### 环境验证
+
+在STM32CubeMX中，从MCU新建工程：
+
+![](doc_images/2026-06-23-14-08-28.png)
+
+经过一番下载之后（如果有警告，直接忽略，看看最后能不能进入到MCU型号选择界面），进入到MCU信号选择界面。在红框处的输入框随便输入一个芯片的型号：
+
+![](doc_images/2026-06-23-14-09-22.png)
+
+型号选择好之后，点击`Start Project`创建工程：
+
+![](doc_images/2026-06-23-14-10-18.png)
+
+进入工程之后，进行红框处的修改：
+
+![](doc_images/2026-06-23-14-11-21.png)
+
+从上到下，这些修改分别对应于工程名称与路径、编译工具链方式（我们这里选择开源的Makefile工具链）和堆栈大小（扩大16倍以免堆栈溢出）。
+
+完成以上修改之后，就可以创建工程代码了：
+
+![](doc_images/2026-06-23-14-12-30.png)
+
+第一次创建工程代码的时候会要求登陆账号和下载固件包，这时候可以科学上网提升速度。
+
+创建完毕后，我们直接打开文件夹：
+
+![](doc_images/2026-06-23-14-13-07.png)
+
+打开文件夹之后，我们可以退回到工程目录的父目录之中：
+
+![](doc_images/2026-06-23-14-14-04.png)
+
+然后右键，选择打开方式：
+
+![](doc_images/2026-06-23-14-14-47.png)
+
+![](doc_images/2026-06-23-14-14-59.png)
+
+选择使用VS Code打开：
+
+![](doc_images/2026-06-23-14-15-15.png)
+
+如果成功安装了各种插件，则会在左侧栏有一个这个图像：
+
+![](doc_images/2026-06-23-14-15-53.png)
+
+点击进入这个插件，并且点击`Build`，如果在终端中出现如下信息则代表编译环境已经安装成功了：
+
+![](doc_images/2026-06-23-14-16-53.png)
