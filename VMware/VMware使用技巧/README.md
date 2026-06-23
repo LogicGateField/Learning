@@ -5,7 +5,6 @@
   - [Linux虚拟机硬盘压缩](#linux虚拟机硬盘压缩)
   - [键盘鼠标响应不灵敏、有延迟](#键盘鼠标响应不灵敏有延迟)
 
-
 ## 共享文件夹在Ubuntu下的使用
 
 完成VMware软件的共享文件夹添加之后，打开Ubuntu虚拟机，在终端中编辑`/etc/fstab`文件：
@@ -41,3 +40,9 @@ sudo vmware-toolbox-cmd disk wipe /; sudo vmware-toolbox-cmd disk wipe /data; su
 ## 键盘鼠标响应不灵敏、有延迟
 
 > https://www.cnblogs.com/bfmhno3/p/18893864
+
+在虚拟机的`*.vmx`文件中添加如下行：
+
+```txt
+keyboard.vusb.enable = "TRUE"
+```
