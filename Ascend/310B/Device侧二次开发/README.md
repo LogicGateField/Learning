@@ -206,3 +206,5 @@ amba_cs_uci_id_match(const struct amba_id *table, struct amba_device *dev)
 ```
 
 确实发生了更改，可见修补文件成功并入到内核源码之中。
+
+完成并入之后，记得将`/data/kernel`目录下生成的修补文件删除哦，不然下一次修补的时候就会连着修补文件一起修补进内核了。
