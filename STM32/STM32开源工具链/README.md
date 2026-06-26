@@ -1,6 +1,6 @@
-# STM32开源工具链搭建
+# STM32开源工具链
 
-- [STM32开源工具链搭建](#stm32开源工具链搭建)
+- [STM32开源工具链](#stm32开源工具链)
   - [系统安装](#系统安装)
     - [VMware虚拟机](#vmware虚拟机)
     - [Ubuntu-24.04安装](#ubuntu-2404安装)
@@ -16,6 +16,10 @@
       - [GCC](#gcc)
       - [OpenOCD](#openocd)
     - [环境验证](#环境验证)
+  - [使用方法](#使用方法)
+    - [添加私有代码文件](#添加私有代码文件)
+    - [F4系列添加CMSIS算法加速库](#f4系列添加cmsis算法加速库)
+    - [H7系列添加CMSIS算法加速库](#h7系列添加cmsis算法加速库)
 
 
 ## 系统安装
@@ -236,3 +240,85 @@ sudo apt install openocd
 点击进入这个插件，并且点击`Build`，如果在终端中出现如下信息则代表编译环境已经安装成功了：
 
 ![](doc_images/2026-06-23-14-16-53.png)
+
+## 使用方法
+
+### 添加私有代码文件
+
+为了演示，我新建了两个文件，分别为`UserCode/demo.h`和`UserCode/demo.c`，对应于头文件和源文件：
+
+![](doc_images/2026-06-26-09-04-45.png)
+
+首先要找到`Makefile`中的`C_SOURCES`变量，类似于以下内容：
+
+![](doc_images/2026-06-26-09-06-53.png)
+
+然后添加自己的源文件，添加后内容如下：
+
+```Makefile
+######################################
+# source
+######################################
+# C sources
+C_SOURCES =  \
+Core/Src/main.c \
+Core/Src/stm32f4xx_it.c \
+Core/Src/stm32f4xx_hal_msp.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
+Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
+Core/Src/system_stm32f4xx.c \
+Core/Src/sysmem.c \
+Core/Src/syscalls.c  \
+UserCode/demo.c
+```
+
+然后再找到`C_INCLUDES`变量，类似如下内容：
+
+![](doc_images/2026-06-26-09-07-27.png)
+
+然后添加自己的头文件路径（注意这里是添加路径，不是添加文件），添加后内容如下：
+
+```Makefile
+# C includes
+C_INCLUDES =  \
+-ICore/Inc \
+-IDrivers/STM32F4xx_HAL_Driver/Inc \
+-IDrivers/STM32F4xx_HAL_Driver/Inc/Legacy \
+-IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
+-IDrivers/CMSIS/Include \
+-IUserCode
+```
+
+保存`Makefile`文件的更改，再次编译即可。
+
+### F4系列添加CMSIS算法加速库
+
+在`C_INCLUDES`中添加`-IDrivers/CMSIS/DSP/Include`。
+
+### H7系列添加CMSIS算法加速库
+
+在`C_INCLUDES`中添加`-IDrivers/CMSIS/DSP/Include`。
+
+在`LIBS`（这个变量在文件靠后的位置）中添加`-larm_cortexM7lfdp_math`。
+
+在`LIBDIR`（这个变量就在`LIBS`的下一行）中添加`-LDrivers/CMSIS/DSP/Lib/GCC`。
+
+添加完之后大概是这样的，可能会有一些不一样（例如`-specs=nano.specs`可能已经被删除），但是基本都是一样的：
+
+```Makefile
+# libraries
+LIBS = -lc -lm -lnosys -larm_cortexM7lfdp_math
+LIBDIR = -LDrivers/CMSIS/DSP/Lib/GCC
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+```
