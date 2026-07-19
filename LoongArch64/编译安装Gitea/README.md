@@ -2,39 +2,42 @@
 
 - [编译安装Gitea](#编译安装gitea)
   - [环境与编译工具部署](#环境与编译工具部署)
+    - [X86\_64，Ubuntu-24.04](#x86_64ubuntu-2404)
+    - [LoongArch，OpenEuler-24.03-LTS](#loongarchopeneuler-2403-lts)
   - [编译方法](#编译方法)
   - [清理方法](#清理方法)
   - [注册为服务](#注册为服务)
   - [附录](#附录)
+    - [OpenEuler系统上的防火墙设置](#openeuler系统上的防火墙设置)
 
 ## 环境与编译工具部署
 
-本次编译平台为X64的Ubuntu-24.04虚拟机，使用以下指令安装编译工具：
+### X86_64，Ubuntu-24.04
+
+编译平台为X64的Ubuntu-24.04虚拟机，使用以下指令安装编译工具：
 
 ```Shell
-sudo apt install npm go make cmake -y
+sudo apt install npm golang make cmake -y
 ```
 
-实测，Ubuntu-24.04默认的这些工具版本已经够用了。
+### LoongArch，OpenEuler-24.03-LTS
+
+编译平台为LoongArch（Loong64）物理机，CPU为3A6000，使用以下指令部署编译工具：
+
+```Shell
+dnf install -y npm go make cmake
+```
 
 ## 编译方法
+
+> [!WARNING]
+> 不要在X64平台上使用交叉编译器编译，如果要编译龙芯架构的就在龙芯架构的QEMU虚拟机或者物理机上进行编译，ARM64同理。在X64平台上进行交叉编译有可能会导致SQLite3无法使用！
 
 按照[Gitea官方编译说明][1]进行编译。注意最后一步编译的时候替换成：
 
 ```Shell
-GOOS=linux GOARCH=loong64 TAGS="bindata sqlite sqlite_unlock_notify" make build
+TAGS="bindata sqlite sqlite_unlock_notify" make build
 ```
-
-编译完成后，观察得到的文件的信息：
-
-```Shell
-ubuntu@ubuntu:/data/gitea$ file ./gitea
-./gitea: ELF 64-bit LSB executable, LoongArch, version 1 (SYSV), statically linked, Go BuildID=lzpaNU7zjtoQyaMFlIv-/eM3PbRQ7dFb60w63YaTx/E26WgwFYI6Afbx1TUwN1/TIKNCUz65RMbOdxf8IAR, stripped
-```
-
-确实是龙芯架构的可执行文件。
-
-在X64平台上使用`qemu-loong64 ./gitea`可以成功启动该编译结果。
 
 ## 清理方法
 
@@ -46,10 +49,10 @@ make clean
 
 ## 注册为服务
 
-添加用户`git`，用于操作隔离：
+添加用户`git`，用于操作隔离（密码啥的也可以设置）：
 
 ```Shell
-
+adduser git
 ```
 
 创建文件`/etc/systemd/system/gitea.service`，并写入以下内容：
@@ -147,6 +150,19 @@ WantedBy=multi-user.target
 
 一般来说，将所有数据与配置放在一个文件夹里面，有利于数据迁移和备份。
 
+> [!WARNING]
+> 整一个包含运行文件和配置文件的目录（这里的示例是`/data/git_server`）必须归属于`git`用户。在`root`中使用`chown git /xx/xxx`命令可以实现目录的归属设置。
+
 ## 附录
+
+### OpenEuler系统上的防火墙设置
+
+如果在OpenEuler系统上部署Gitea服务器，则必须将服务器对外服务的端口的TCP和UDP协议加入到防火墙的入站规则中：
+
+```Shell
+firewall-cmd --zone=public --add-port=3000/tcp --permanent
+firewall-cmd --zone=public --add-port=3000/udp --permanent
+firewall-cmd --reload
+```
 
 [1]: https://docs.gitea.com/zh-cn/1.19/installation/install-from-source
