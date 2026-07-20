@@ -66,7 +66,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/etc/proxy
-ExecStart=/usr/bin/proxy http -t tcp -p :7890
+ExecStart=/usr/bin/proxy http -t tcp -p :7890 -a "user:password"
 Restart=on-failure
 RestartSec=5s
 
