@@ -66,7 +66,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/etc/proxy
-ExecStart=/usr/bin/proxy http -t tcp -p :7890 -a "user:password"
+ExecStart=/usr/bin/proxy http -t tcp -p :7890
 Restart=on-failure
 RestartSec=5s
 
@@ -74,7 +74,7 @@ RestartSec=5s
 WantedBy=multi-user.target
 ```
 
-启动服务：
+启动服务（立刻生效，并且开机自启）：
 
 ```Shell
 sudo systemctl daemon-reload
@@ -101,6 +101,15 @@ Jul 20 07:25:41 ip-172-31-27-33 proxy[12119]: 2026/07/20 07:25:41.143 INFO tcp h
 Jul 20 07:25:41 ip-172-31-27-33 proxy[12119]: 2026/07/20 07:25:41.143 INFO your system ulimit 524288 is too small, max value is: 524288, try set to 1000000
 Jul 20 07:25:41 ip-172-31-27-33 proxy[12119]: 2026/07/20 07:25:41.143 INFO the result ulimit is: 1000000
 ```
+
+关闭服务（立刻生效，并取消开机自启）：
+
+```Shell
+sudo systemctl disable --now goproxy
+```
+
+> [!WARNING]
+> 免费版没有密码认证功能，使用完毕之后一定要记得关闭服务器！！！
 
 ## 附录
 
